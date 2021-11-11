@@ -98,6 +98,7 @@ public class Board {
 
     /**
      * Check if player can do any hit
+     *
      * @param playerState the state of the player making the move
      * @return true if any hit is possible, false otherwise
      */
@@ -117,6 +118,21 @@ public class Board {
             }
         }
         return false;
+    }
+
+    /**
+     * Method to count current player pawns on the board
+     *
+     * @param playerState selected player to count pawns
+     * @return number of pawns
+     */
+    private Integer countPlayerPawns(State playerState) {
+        int counter = 0;
+        for (Map.Entry<Integer, State> field : boardState.entrySet()) {
+            if (field.getValue().equals(playerState))
+                counter++;
+        }
+        return counter;
     }
 
     private List<Integer> getCommonElements(List<Integer> a, List<Integer> b) {
