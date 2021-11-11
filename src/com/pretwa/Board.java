@@ -3,10 +3,8 @@ package com.pretwa;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -97,4 +95,32 @@ public class Board {
         return possibleMoves.get(from).contains(to) &&
                 (boardState.get(to).equals(enemyState) || boardState.get(to).equals(State.EMPTY));
     }
+
+    /**
+     * Check if player can do any hit
+     * @param playerState the state of the player making the move
+     * @return true if any hit is possible, false otherwise
+     */
+    private boolean checkIfPlayerCanDoAnyHit(State playerState) {
+        State enemyState = playerState.equals(State.RED) ? State.BLACK : State.RED;
+
+        for (Map.Entry<Integer, State> field : boardState.entrySet()) {
+            if (field.getValue().equals(playerState)) {
+                for (Integer possibleHit : possibleHits.get(field.getKey())) {
+                    if (boardState.get(possibleHit).equals(State.EMPTY)) {
+                        Integer currentPosition = field.getKey();
+                        List<Integer> hits = getCommonElements(possibleMoves.get(possibleHit), possibleMoves.get(currentPosition));
+
+                        return hits.stream().anyMatch(x -> boardState.get(x).equals(enemyState));
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private List<Integer> getCommonElements(List<Integer> a, List<Integer> b) {
+        return a.stream().filter(b::contains).collect(Collectors.toList());
+    }
+
 }
