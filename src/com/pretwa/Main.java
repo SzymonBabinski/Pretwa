@@ -1,8 +1,14 @@
 package com.pretwa;
 
+import static com.pretwa.Board.checkIfCanDoMove;
+
 public class Main {
 
     public static void main(String[] args) {
-	// write your code here
+        Board board = new Board();
+
+        board.printBoard();
+
+        checkIfCanDoMove(17,18,State.RED);
     }
 }
