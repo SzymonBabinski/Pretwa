@@ -94,6 +94,7 @@ public class Board {
     public static boolean checkIfCanDoMove(Integer from, Integer to, State playerState, Map<Integer, State> boardState) {
         State enemyState = playerState.equals(State.RED) ? State.BLACK : State.RED;
         return possibleMoves.get(from).contains(to) &&
+                boardState.get(from).equals(playerState) &&
                 (boardState.get(to).equals(enemyState) || boardState.get(to).equals(State.EMPTY));
     }
 
@@ -140,18 +141,39 @@ public class Board {
 
     /**
      * Returns copy of passed board state
+     *
      * @param originalBoardState original board state
      * @return copy of original boards state
      */
-    public static Map<Integer,State> copyBoardState(Map<Integer,State> originalBoardState){
+    public static Map<Integer, State> copyBoardState(Map<Integer, State> originalBoardState) {
         return new HashMap<>(originalBoardState);
+    }
+
+    /**
+     * WARNING: Do only it only if {@link #checkIfCanDoMove} returns TRUE!
+     * This method updates board state
+     *
+     * @param from       origin board value
+     * @param to         destination board value
+     * @param player     player which does a move
+     * @param boardState passed boardState (needed for recursion)
+     */
+    public static void makeMove(Integer from, Integer to, State player, Map<Integer, State> boardState) {
+        boardState.replace(from, State.EMPTY);
+        boardState.replace(to, player);
     }
 
     private static List<Integer> getCommonElements(List<Integer> a, List<Integer> b) {
         return a.stream().filter(b::contains).collect(Collectors.toList());
     }
 
+    private static void clearScreen() {
+        for (int i = 0; i < 50; ++i) System.out.println();
+    }
+
     public static void printBoard(Map<Integer, State> boardState) {
+        clearScreen();
+
         String board =
                 "   " + boardState.get(1) + "     " + boardState.get(6) + "   "
                         + System.lineSeparator() +
