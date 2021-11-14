@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 @Setter
 public class Board {
 
-    private static final Map<Integer, State> boardState = new HashMap<>() {{
+    public final Map<Integer, State> boardState = new HashMap<>() {{
         put(1, State.BLACK);
         put(2, State.BLACK);
         put(3, State.BLACK);
@@ -88,9 +88,10 @@ public class Board {
      * @param from        integer number from which we do a move (0-19)
      * @param to          integer number to which we want do a move (0-19)
      * @param playerState the state of the player making the move
+     * @param boardState  current state of a board
      * @return true if move is possible, false otherwise
      */
-    public static boolean checkIfCanDoMove(Integer from, Integer to, State playerState) {
+    public static boolean checkIfCanDoMove(Integer from, Integer to, State playerState, Map<Integer, State> boardState) {
         State enemyState = playerState.equals(State.RED) ? State.BLACK : State.RED;
         return possibleMoves.get(from).contains(to) &&
                 (boardState.get(to).equals(enemyState) || boardState.get(to).equals(State.EMPTY));
@@ -100,9 +101,10 @@ public class Board {
      * Check if player can do any hit
      *
      * @param playerState the state of the player making the move
+     * @param boardState  current state of a board
      * @return true if any hit is possible, false otherwise
      */
-    public boolean checkIfPlayerCanDoAnyHit(State playerState) {
+    public static boolean checkIfPlayerCanDoAnyHit(State playerState, Map<Integer, State> boardState) {
         State enemyState = playerState.equals(State.RED) ? State.BLACK : State.RED;
 
         for (Map.Entry<Integer, State> field : boardState.entrySet()) {
@@ -124,9 +126,10 @@ public class Board {
      * Method to count current player pawns on the board
      *
      * @param playerState selected player to count pawns
+     * @param boardState  current state of a board
      * @return number of pawns
      */
-    public Integer countPlayerPawns(State playerState) {
+    public static Integer countPlayerPawns(State playerState, Map<Integer, State> boardState) {
         int counter = 0;
         for (Map.Entry<Integer, State> field : boardState.entrySet()) {
             if (field.getValue().equals(playerState))
@@ -135,11 +138,20 @@ public class Board {
         return counter;
     }
 
-    private List<Integer> getCommonElements(List<Integer> a, List<Integer> b) {
+    /**
+     * Returns copy of passed board state
+     * @param originalBoardState original board state
+     * @return copy of original boards state
+     */
+    public static Map<Integer,State> copyBoardState(Map<Integer,State> originalBoardState){
+        return new HashMap<>(originalBoardState);
+    }
+
+    private static List<Integer> getCommonElements(List<Integer> a, List<Integer> b) {
         return a.stream().filter(b::contains).collect(Collectors.toList());
     }
 
-    public void printBoard() {
+    public static void printBoard(Map<Integer, State> boardState) {
         String board =
                 "   " + boardState.get(1) + "     " + boardState.get(6) + "   "
                         + System.lineSeparator() +
