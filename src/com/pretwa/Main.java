@@ -1,14 +1,15 @@
 package com.pretwa;
 
-import static com.pretwa.Board.checkIfCanDoMove;
+import static com.pretwa.Board.*;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args){
         Board board = new Board();
 
-        board.printBoard();
+        printBoard(board.getBoardState());
 
-        checkIfCanDoMove(17,18,State.RED);
+
     }
+
 }

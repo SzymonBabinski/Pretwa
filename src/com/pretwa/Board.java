@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 @Setter
 public class Board {
 
-    public final Map<Integer, State> boardState = new HashMap<>() {{
+    private final Map<Integer, State> boardState = new HashMap<>() {{
         put(1, State.BLACK);
         put(2, State.BLACK);
         put(3, State.BLACK);
@@ -85,17 +85,30 @@ public class Board {
     /**
      * Checks if player can do a move
      *
-     * @param from        integer number from which we do a move (0-19)
-     * @param to          integer number to which we want do a move (0-19)
      * @param playerState the state of the player making the move
      * @param boardState  current state of a board
      * @return true if move is possible, false otherwise
      */
-    public static boolean checkIfCanDoMove(Integer from, Integer to, State playerState, Map<Integer, State> boardState) {
-        State enemyState = playerState.equals(State.RED) ? State.BLACK : State.RED;
-        return possibleMoves.get(from).contains(to) &&
-                boardState.get(from).equals(playerState) &&
-                (boardState.get(to).equals(enemyState) || boardState.get(to).equals(State.EMPTY));
+    public static boolean checkIfCanDoMove(Move move, State playerState, Map<Integer, State> boardState) {
+        State enemyState = getEnemy(playerState);
+        return possibleMoves.get(move.getFrom()).contains(move.getTo()) &&
+                boardState.get(move.getFrom()).equals(playerState) &&
+                (boardState.get(move.getTo()).equals(enemyState) || boardState.get(move.getTo()).equals(State.EMPTY));
+    }
+
+    public static List<Move> generateMoves(State playerState, Map<Integer, State> boardState) {
+        List<Move> moves = new ArrayList<>();
+
+        for (Map.Entry<Integer, State> field : boardState.entrySet()) {
+            if (field.getValue().equals(playerState)) {
+                for (Integer possibleMove : possibleMoves.get(field.getKey())) {
+                    if (boardState.get(possibleMove).equals(State.EMPTY)) {
+                        moves.add(new Move(field.getKey(), possibleMove));
+                    }
+                }
+            }
+        }
+        return moves;
     }
 
     /**
@@ -106,22 +119,34 @@ public class Board {
      * @return true if any hit is possible, false otherwise
      */
     public static boolean checkIfPlayerCanDoAnyHit(State playerState, Map<Integer, State> boardState) {
-        State enemyState = playerState.equals(State.RED) ? State.BLACK : State.RED;
+        return !generateHits(playerState, boardState).isEmpty();
+    }
+
+    public static List<Move> generateHits(State playerState, Map<Integer, State> boardState) {
+        List<Move> hits = new ArrayList<>();
+        State enemyState = getEnemy(playerState);
 
         for (Map.Entry<Integer, State> field : boardState.entrySet()) {
             if (field.getValue().equals(playerState)) {
                 for (Integer possibleHit : possibleHits.get(field.getKey())) {
                     if (boardState.get(possibleHit).equals(State.EMPTY)) {
                         Integer currentPosition = field.getKey();
-                        List<Integer> hits = getCommonElements(possibleMoves.get(possibleHit), possibleMoves.get(currentPosition));
+                        List<Integer> pawnsHit = getCommonElements(possibleMoves.get(possibleHit), possibleMoves.get(currentPosition));
 
-                        return hits.stream().anyMatch(x -> boardState.get(x).equals(enemyState));
+                        pawnsHit.stream()
+                                .filter(pawnHit -> boardState.get(pawnHit).equals(enemyState))
+                                .forEach(pawnHit -> hits.add(new Move(currentPosition, possibleHit, pawnHit, true)));
                     }
                 }
             }
         }
-        return false;
+        return hits;
     }
+
+    public static State getEnemy(State playerState) {
+        return playerState.equals(State.RED) ? State.BLACK : State.RED;
+    }
+
 
     /**
      * Method to count current player pawns on the board
@@ -153,14 +178,12 @@ public class Board {
      * WARNING: Do only it only if {@link #checkIfCanDoMove} returns TRUE!
      * This method updates board state
      *
-     * @param from       origin board value
-     * @param to         destination board value
      * @param player     player which does a move
      * @param boardState passed boardState (needed for recursion)
      */
-    public static void makeMove(Integer from, Integer to, State player, Map<Integer, State> boardState) {
-        boardState.replace(from, State.EMPTY);
-        boardState.replace(to, player);
+    public static void makeMove(Move move, State player, Map<Integer, State> boardState) {
+        boardState.replace(move.getFrom(), State.EMPTY);
+        boardState.replace(move.getTo(), player);
     }
 
     private static List<Integer> getCommonElements(List<Integer> a, List<Integer> b) {
